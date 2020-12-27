@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.eleven.mapper.RegisteredMapper">
+    <resultMap id="regMap" type="registered">
+        <id column="reg_id" property="regId"/>
+        <!--<result column="user_id" property="card"></result>-->
+        <result column="reg_date" property="regDate"/>
+        <result column="reg_price" property="regPrice"/>
+        <result column="reg_status" property="regStatus"/>
+        <!-- 卡的外键-->
+        <association column="user_id"  property="card" javaType="card">
+            <id column="card_id" property="cardId"/>
+            <result column="user_id" property="userId"/>
+            <result column="user_pwd" property="userPwd"/>
+            <result column="user_name" property="userName"/>
+            <result column="user_sex" property="userSex"/>
+            <result column="money" property="money"/>
+            <result column="birthday" property="birthday"/>
+            <result column="card_status" property="cardStatus"/>
+            <result column="user_tel" property="userTel"/>
+            <result column="sos_tel" property="sosTel"/>
+            <result column="user_pic" property="userPic"/>
+        </association>
+
+       <!-- 科室的外键-->
+        <association column="dept_id"  property="dept" javaType="dept">
+            <id column="dept_id" property="deptId"/>
+            <result column="dept_name" property="deptName"/>
+            <result column="dept_parent_id" property="deptParentId"/>
+            <result column="url" property="url"/>
+            <result column="describe" property="describe"/>
+        </association>
+
+        <!-- 医生的外键-->
+        <association column="doctor_id"  property="doctor" javaType="doctor">
+            <id column="doctor_id" property="doctorId"/>
+            <result column="doctor_name" property="doctorName"/>
+            <result column="doctor_sex" property="doctorSex"/>
+            <result column="doctor_pic" property="doctorPic"/>
+
+            <result column="doctor_info" property="doctorInfo"/>
+            <result column="doctor_status" property="doctorStatus"/>
+            <result column="doctor_pwd" property="doctorPwd"/>
+            <!--<result column="job_id" property="job"/>
+            <result column="dept_id" property="dept"/>
+            <result column="role_id" property="role"/>-->
+
+        </association>
+
+        <!-- 职称的外键-->
+        <association column="job_id"  property="job" javaType="job">
+            <id column="job_id" property="jobId"/>
+            <result column="job_name" property="jobName"/>
+        </association>
+
+    </resultMap>
+    <!--查询所有挂号单的钱-->
+    <select id="findRegistrarsMoney" resultMap="regMap">
+    select SUM(reg_price) reg_price from registered
+
+    </select>
+    <!--添加挂号单-->
+    <insert id="addRegistered" parameterType="registered" >
+ insert into registered values(null,#{card.userId},#{regDate},#{regPrice},
+ #{dept.deptId},#{doctor.doctorId},#{job.jobId},1)
+</insert>
+
+    <!--查询所有挂号单-->
+    <select id="findAllRegistrars" resultMap="regMap">
+SELECT
+r.reg_id,r.reg_status,r.reg_price,
+c.user_name,
+d.dept_name,
+doc.doctor_id,doc.doctor_name,doc.role_id,re.role_name,doc.dept_id ,
+
+r.reg_date
+
+FROM
+registered r LEFT JOIN card c on r.user_id=c.user_id
+LEFT JOIN dept d on r.dept_id=d.dept_id
+LEFT JOIN job j on j.job_id=r.job_id
+LEFT JOIN doctor doc on doc.doctor_id=r.doctor_id
+LEFT JOIN role re on doc.role_id=re.role_id
+where doc.dept_id=106 and r.reg_status-- doc.doctor_id=1
+order by r.reg_date desc
+
+    </select>
+
+    <!--查询挂号单通过用户-->
+    <select id="findRegistrarsByRegId" resultMap="regMap">
+SELECT
+r.reg_id,c.user_id,r.reg_status,r.reg_price,
+c.user_name,
+d.dept_name,
+doc.doctor_id,doc.doctor_name,doc.role_id,re.role_name,doc.dept_id ,
+r.reg_date
+FROM
+registered r LEFT JOIN card c on r.user_id=c.user_id
+LEFT JOIN dept d on r.dept_id=d.dept_id
+LEFT JOIN job j on j.job_id=r.job_id
+LEFT JOIN doctor doc on doc.doctor_id=r.doctor_id
+LEFT JOIN role re on doc.role_id=re.role_id
+where r.reg_id=#{regId}
+order by r.reg_date desc
+    </select>
+
+    <!--修改挂号单的状态通过挂号单id-->
+    <update id="updateRegistrarsStatus" parameterType="registered">
+        UPDATE registered SET reg_status=#{regStatus} where reg_id=#{regId}
+    </update>
+
+    <!--对患者挂号进行判重-->
+    <select id="findRegistrarsForRepeat" resultMap="regMap">
+     SELECT *
+     from registered
+     where user_id=#{card.userId}
+     and dept_id=#{dept.deptId}
+     and reg_status=1
+     and doctor_id=#{doctor.doctorId}
+
+    </select>
+
+   <!-- 查询最大挂号id通过患者id-->
+    <select id="findMaxRegisteredIdByUserId" resultMap="regMap">
+        select max(reg_id) as reg_id from registered WHERE user_id=#{userId}
+    </select>
+</mapper>

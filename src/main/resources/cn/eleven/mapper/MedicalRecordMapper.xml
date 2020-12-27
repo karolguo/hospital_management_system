@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.eleven.mapper.MedicalRecordMapper">
+    <resultMap id="meMap" type="medicalRecord">
+        <id column="mr_id" property="mrId"></id>
+        <result column="user_id" property="userId"></result>
+        <result column="doctor_id" property="doctorId"></result>
+        <result column="med_order" property="medOrder"></result>
+        <result column="med_date" property="medDate"></result>
+        <result column="mr_check_price" property="mrCheckPrice"></result>
+        <result column="mr_drug_price" property="mrDrugPrice"></result>
+        <result column="word_url" property="wordUrl"></result>
+    </resultMap>
+
+
+    <select id="findCheckAndDrugMoney" resultMap="meMap">
+       select SUM(mr_check_price) mr_check_price,SUM(mr_drug_price) mr_drug_price from medical_record
+    </select>
+
+    <insert id="addMR" parameterType="medicalRecord">
+        INSERT INTO medical_record (user_id,doctor_id,med_date,reg_id) VALUES (#{userId},#{doctorId},#{medDate},#{regId})
+    </insert>
+
+    <select id="findMRByUserId" resultMap="meMap">
+        SELECT * FROM medical_record WHERE user_id=#{userId} AND reg_id=#{regId}
+    </select>
+
+    <insert id="addCheck" parameterType="medicalRecord">
+        INSERT INTO check_order (mr_id,check_id) VALUES (#{mrId},#{checkId})
+    </insert>
+
+    <update id="updateMR" parameterType="medicalRecord">
+        UPDATE medical_record
+        SET med_order=#{medOrder},mr_check_price=#{mrCheckPrice},mr_drug_price=#{mrDrugPrice}
+        WHERE mr_id=#{mrId}
+    </update>
+</mapper>

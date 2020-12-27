@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.eleven.mapper.DeptMapper">
+    <resultMap id="deptMap" type="dept">
+        <id column="dept_id" property="deptId"></id>
+        <result column="dept_name" property="deptName"></result>
+        <result column="dept_name_to" property="deptNameTo"></result>
+        <result column="dept_parent_id" property="deptParentId"></result>
+        <result column="url" property="url"></result>
+        <result column="describe" property="describe"></result>
+    </resultMap>
+    <!--查询所有科室-->
+    <select id="findAllDept" resultMap="deptMap">
+        select dept_id ,dept_name,dept_parent_id,url,`describe` from dept
+    </select>
+    <!--通过deptId查找dept-->
+    <select id="findDeptById" parameterType="int" resultMap="deptMap">
+        select dept_id ,dept_name,dept_parent_id,url,`describe` from dept where dept_id=#{deptId}
+    </select>
+    <select id="findSecondDeptByFirst" parameterType="int" resultMap="deptMap">
+        select dept_id ,dept_name,dept_parent_id,url,`describe` from dept where dept_parent_id=#{deptParentId}
+    </select>
+
+    <!--admin查询所有一级科室-->
+    <select id="toFindAllNullDept" resultMap="deptMap">
+            SELECT
+            d.dept_id,d.dept_name,d.dept_parent_id,d.`describe`,d.url
+            FROM
+            dept d
+            WHERE
+            d.dept_parent_id is null
+            ORDER BY dept_id
+    </select>
+
+    <!--admin查询所有二级科室-->
+    <select id="toFindAllNoNullDept" resultMap="deptMap">
+            SELECT
+            d.dept_id,d.dept_name,d.dept_parent_id,d.`describe`,d.url
+            FROM
+            dept d
+            WHERE
+            d.dept_parent_id is not null
+            ORDER BY d.dept_parent_id
+    </select>
+
+    <!--admin通过deptId查找最大deptId-->
+    <select id="toFindMaxDeptById" parameterType="int" resultMap="deptMap">
+        SELECT
+        MAX(d.dept_id) as dept_id,dept_name,d.dept_parent_id,d.`describe`,d.url
+        FROM
+        dept d
+        WHERE
+        d.dept_id LIKE CONCAT('%',#{deptId},'%')
+    </select>
+    <!--admin根据一级科室ID查找二级科室信息-->
+    <select id="toFindSecondDeptByFirst" parameterType="int" resultMap="deptMap">
+        select
+        dept_id ,dept_name,dept_parent_id,url,`describe`
+        from
+        dept
+        where
+        dept_parent_id=#{deptId}
+        ORDER BY dept_id
+    </select>
+    <!--添加科室-->
+    <insert id="addDept" parameterType="dept">
+    INSERT into dept(dept_id,dept_name,dept_parent_id,url,`describe`)
+    VALUES(#{deptId},#{deptName},#{deptParentId},#{url},#{describe})
+    </insert>
+
+   <!--修改科室-->
+    <update id="updateDept" parameterType="dept" >
+    UPDATE
+    dept
+    SET
+    dept_name=#{deptName},`describe`=#{describe}
+    WHERE dept_id=#{deptId}
+    </update>
+</mapper>

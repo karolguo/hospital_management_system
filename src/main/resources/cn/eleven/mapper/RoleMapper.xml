@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.eleven.mapper.RoleMapper">
+    <resultMap id="roleMap" type="role">
+        <id column="role_id" property="roleId"></id>
+        <result column="role_name" property="roleName"></result>
+
+    </resultMap>
+    <!--查询所有角色-->
+    <select id="findAllRole" resultMap="roleMap">
+        select * from role
+    </select>
+    <!--通过id查询角色-->
+    <select id="findRoleById" resultMap="roleMap" parameterType="int">
+        select * from role where role_id=#{roleId}
+    </select>
+
+    <!--通过医生id查询角色-->
+    <select id="findRoleByDoctorId" resultMap="roleMap" parameterType="int">
+       select d.role_id,r.role_name
+       from doctor d LEFT JOIN role r on d.role_id=r.role_id
+       WHERE d.doctor_id=#{doctorId}
+    </select>
+</mapper>

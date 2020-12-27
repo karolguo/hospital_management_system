@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.eleven.mapper.CardMapper">
+<resultMap id="cardMap" type="card">
+    <id column="card_id" property="cardId"></id>
+    <result column="user_id" property="userId"></result>
+    <result column="user_pwd" property="userPwd"></result>
+    <result column="user_name" property="userName"></result>
+    <result column="user_sex" property="userSex"></result>
+    <result column="money" property="money"></result>
+    <result column="birthday" property="birthday"></result>
+    <result column="card_status" property="cardStatus"></result>
+    <result column="user_tel" property="userTel"></result>
+    <result column="sos_tel" property="sosTel"></result>
+    <result column="user_pic" property="userPic"></result>
+</resultMap>
+        <resultMap id="docMap" type="doctor">
+            <id column="doctor_id" property="doctorId"></id>
+            <result column="doctor_name" property="doctorName"></result>
+            <result column="doctor_sex" property="doctorSex"></result>
+            <result column="doctor_pic" property="doctorPic"></result>
+            <result column="doctor_info" property="doctorInfo"></result>
+            <result column="doctor_status" property="doctorStatus"></result>
+            <result column="doctor_pwd" property="doctorPwd"></result>
+            <association property="job" javaType="job">
+                <id column="job_id" property="jobId"></id>
+                <result column="job_name" property="jobName"></result>
+            </association>
+            <association property="dept" javaType="dept">
+                <id column="dept_id" property="deptId"></id>
+                <result column="dept_name" property="deptName"></result>
+                <result column="dept_parent_id" property="deptParentId"></result>
+                <result column="url" property="url"></result>
+                <result column="describe" property="describe"></result>
+            </association>
+            <association property="role" javaType="role">
+                <id column="role_id" property="roleId"/>
+                <result column="role_name" property="roleName"/>
+            </association>
+        </resultMap>
+    <!--修改卡的状态-->
+    <update id="updateCardStatus" parameterType="card">
+        UPDATE card SET card_status=#{cardStatus} where user_id=#{userId}
+    </update>
+    <!--通过用户id查询卡-->
+    <select id="findCardByUserId" resultMap="cardMap" parameterType="String">
+    SELECT * FROM card WHERE user_id=#{userId}
+    </select>
+    <!--新用户判断-->
+    <select id="newUserLogin" resultMap="cardMap" parameterType="card">
+SELECT * FROM card WHERE user_id=#{card.userId}
+
+    </select>
+    <!--用户登录-->
+    <select id="userLogin" resultMap="cardMap" parameterType="card">
+SELECT * FROM card WHERE user_id=#{card.userId} and user_pwd=#{card.userPwd}
+or user_tel=#{card.userId} and user_pwd=#{card.userPwd}
+
+    </select>
+    <!--办新卡-->
+    <insert id="addCard" parameterType="card">
+insert into card values(null,#{userId},#{userPwd},#{userName},#{userSex},100.0,#{birthday},0,NULL,NULL,null)
+    </insert>
+    <!--充钱-->
+    <update id="updateCardMoney" parameterType="card">
+        UPDATE card SET money=#{money} WHERE user_id=#{userId}
+    </update>
+    <!--查询所有卡-->
+    <select id="findAllCard" resultMap="cardMap">
+        select user_id,user_name,user_sex,money,card_status,user_tel from card
+    </select>
+    <!--用户修改卡的信息通过userId-->
+    <update id="updateCardByUserId" parameterType="card">
+        UPDATE card SET user_tel=#{userTel},sos_tel=#{sosTel} where user_id=#{userId}
+    </update>
+    <!--根据一级科室ID查询医生-->
+    <select id="findFirstDeptDoctor" parameterType="int" resultMap="docMap">
+        SELECT
+	        d.doctor_id,d.doctor_name,d.doctor_sex,d.doctor_pic,j.job_name,d.doctor_info,d.dept_id,de.dept_name,
+	        r.role_name,d.doctor_pic
+        FROM
+	        doctor d LEFT JOIN job j ON d.job_id=j.job_id LEFT JOIN dept de ON d.dept_id = de.dept_id
+	        LEFT JOIN role r ON d.role_id = r.role_id
+        WHERE
+	        de.dept_parent_id IS NULL AND d.dept_id = #{depId}
+    </select>
+    <select id="findSecondDeptDoctor" parameterType="int" resultMap="docMap">
+         SELECT
+	        d.doctor_id,d.doctor_name,d.doctor_sex,d.doctor_pic,j.job_name,d.doctor_info,d.dept_id,de.dept_name,
+	        r.role_name,d.doctor_pic
+        FROM
+	        doctor d LEFT JOIN job j ON d.job_id=j.job_id LEFT JOIN dept de ON d.dept_id = de.dept_id
+	        LEFT JOIN role r ON d.role_id = r.role_id
+        WHERE
+	        de.dept_parent_id IS NOT NULL AND d.dept_id=#{Id}
+    </select>
+    <!--查找医生按照医生ID-->
+    <select id="findDetailedDoctor" parameterType="int" resultMap="docMap">
+        SELECT
+	        d.doctor_name,d.doctor_sex,d.doctor_pic,d.doctor_info,r.role_name,de.dept_name,d.doctor_pic
+        FROM
+	        doctor d LEFT JOIN role r ON d.role_id = r.role_id LEFT JOIN dept de ON d.dept_id = de.dept_id
+        WHERE
+	        d.doctor_id = #{doctorId}
+    </select>
+    <!--查看个人病例-->
+    <select id="findCase" resultType="MedicalRecord" parameterType="string">
+        SELECT
+	        mr.mr_id AS mrId,c.user_name AS userName,d.doctor_name AS doctorName,
+	        mr.med_order AS medOrder,mr.med_date AS medDate,
+	        mr.mr_check_price AS mrCheckPrice,mr.mr_drug_price AS mrDrugPrice,de.dept_name AS deptName
+        FROM
+	        medical_record mr LEFT JOIN card c ON mr.user_id = c.user_id LEFT JOIN doctor d
+	        ON mr.doctor_id = d.doctor_id LEFT JOIN dept de ON d.dept_id = de.dept_id
+        WHERE
+	        mr.user_id=#{userId}
+    </select>
+    <!--查看个人详细病例-->
+    <select id="findDetailedCase" parameterType="int" resultType="MedicalRecord">
+        SELECT
+	        mr.mr_id AS mrId,c.user_name AS userName,d.doctor_name AS doctorName,
+	        mr.med_order AS medOrder,mr.med_date AS medDate,
+	        mr.mr_check_price AS mrCheckPrice,mr.mr_drug_price AS mrDrugPrice,
+	        de.dept_name AS deptName,dr.drug_name AS drugName,dror.drug_order_num AS drugOrderNum,
+	        dror.drug_order_price AS drugOderPrice,dror.drug_order_status AS drugOrderStatus,
+	        ch.check_name AS checkName
+        FROM
+	        medical_record mr LEFT JOIN card c ON mr.user_id = c.user_id LEFT JOIN doctor d
+	        ON mr.doctor_id = d.doctor_id LEFT JOIN dept de ON d.dept_id = de.dept_id
+	        LEFT JOIN drug_order dror ON mr.mr_id = dror.mr_id LEFT JOIN drug dr ON
+	        dror.drug_id = dr.drug_id LEFT JOIN check_order chor ON chor.mr_id = mr.mr_id
+		    LEFT JOIN `check` ch ON chor.check_id = ch.check_id
+        WHERE
+	        mr.mr_id=#{mrId}
+        GROUP BY dr.drug_name
+
+    </select>
+</mapper>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.eleven.mapper.DrugMapper">
+
+    <select id="findDrugMedical" parameterType="MedicalRecord" resultType="MedicalRecord">
+    select
+        mr.mr_id as mrId,d.drug_name as drugName,o.drug_order_num as drugOrderNum,
+        d.drug_price as drugPrice,o.drug_order_price as drugOderPrice,mr.med_date as medDate,
+        doc.doctor_name as doctorName,o.drug_order_status as drugOrderStatus
+    FROM drug d LEFT JOIN drug_order o ON d.drug_id=o.drug_id
+    LEFT JOIN medical_record mr on mr.mr_id=o.mr_id
+    LEFT JOIN doctor doc on mr.doctor_id=doc.doctor_id
+    WHERE
+        mr.mr_id=#{mrId} and o.drug_order_status = '1'
+    </select>
+    <select id="findMedicalStock" resultType="Drug">
+        SELECT
+	        drug_id as drugId,drug_name as drugName,drug_num as drugNum,drug_price as drugPrice
+        FROM
+	        drug
+
+    </select>
+    <update id="delDrug" parameterType="int">
+        UPDATE drug_order SET drug_order_status=#{drugOrderStatus} where mr_id=#{mrId}
+    </update>
+    <update id="checkoutDrug" parameterType="int">
+        UPDATE drug_order SET drug_order_status=#{drugOrderStatus} where mr_id=#{mrId}
+    </update>
+    <select id="findMedicalByName" parameterType="String" resultType="Drug">
+          SELECT
+	        drug_id as drugId,drug_name as drugName,drug_num as drugNum,drug_price as drugPrice
+        FROM
+	        drug
+	    WHERE
+	        drug_name like CONCAT("%", #{drugName}, "%")
+    </select>
+    <select id="findCriticalStock" resultType="Drug">
+        SELECT
+	        drug_id as drugId,drug_name as drugName,drug_num as drugNum,drug_price as drugPrice
+        FROM
+	        drug
+	    WHERE
+	        drug_num &lt;=500
+    </select>
+
+
+    <select id="findDrugById" resultType="drug">
+        SELECT
+	        drug_id as drugId,drug_name as drugName,drug_num as drugNum,drug_price as drugPrice
+        FROM
+	        drug
+	    WHERE
+	        drug_id=#{drugId}
+    </select>
+
+    <update id="updateDrugNum" parameterType="int">
+        UPDATE drug SET drug_num=#{drugNum} where drug_id=#{drugId}
+    </update>
+
+    <insert id="addDrugOrder" parameterType="drugOrder">
+        INSERT INTO
+        drug_order (mr_id,drug_id,drug_order_num,drug_order_price,drug_order_status)
+        VALUES (#{medicalRecord.mrId},#{drug.drugId},#{drugOrderNum},#{drugOrderPrice},1)
+    </insert>
+
+    <select id="findListStock" parameterType="MedicalRecord" resultType="MedicalRecord">
+        select
+        mr.mr_id as mrId,d.drug_name as drugName,o.drug_order_num as drugOrderNum,
+        d.drug_price as drugPrice,o.drug_order_price as drugOderPrice,mr.med_date as medDate,
+        doc.doctor_name as doctorName,o.drug_order_status as drugOrderStatus,ch.check_name AS checkName
+    FROM drug d LEFT JOIN drug_order o ON d.drug_id=o.drug_id
+    LEFT JOIN medical_record mr on mr.mr_id=o.mr_id
+    LEFT JOIN doctor doc on mr.doctor_id=doc.doctor_id
+    LEFT JOIN check_order chor ON chor.mr_id = mr.mr_id
+	LEFT JOIN `check` ch ON chor.check_id = ch.check_id
+    WHERE
+        mr.user_id=#{userId} and o.drug_order_status = '1'
+    GROUP  BY mr.mr_id
+    </select>
+
+
+    <select id="findDrugOrderByMrId" resultType="drugOrder">
+        SELECT mr.mr_id AS mrId,o.drug_id AS drugId,o.drug_order_num AS drugOrderNum,o.drug_order_price AS drugOrderPrice,
+        o.drug_order_status AS drugOrderStatus
+        FROM drug d LEFT JOIN drug_order o ON d.drug_id=o.drug_id LEFT JOIN medical_record mr on mr.mr_id=o.mr_id
+        WHERE mr.mr_id=#{mrId}
+    </select>
+</mapper>

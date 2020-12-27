@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.eleven.mapper.AdminMapper">
+    <resultMap id="adminMap" type="admin">
+        <id column="admin_id" property="adminId"></id>
+        <result column="admin_login_name" property="adminLoginName"></result>
+        <result column="admin_status" property="adminStatus"></result>
+        <result column="admin_login_pwd" property="adminLoginPwd"></result>
+        <result column="admin_real_name" property="adminRealName"></result>
+        <association property="dept" javaType="dept">
+            <id column="dept_id" property="deptId"></id>
+            <result column="dept_name" property="deptName"></result>
+            <result column="dept_parent_id" property="deptParentId"></result>
+            <result column="url" property="url"></result>
+            <result column="describe" property="describe"></result>
+        </association>
+        <association property="role" javaType="role">
+            <id column="role_id" property="roleId"/>
+            <result column="role_name" property="roleName"/>
+        </association>
+    </resultMap>
+
+    <select id="adminLogin" parameterType="admin" resultMap="adminMap">
+    SELECT
+    a.admin_id,a.admin_login_name,a.admin_login_pwd,
+    a.admin_status,a.dept_id,a.role_id,a.admin_real_name,r.role_name
+    FROM
+    admin a LEFT JOIN role r ON a.role_id=r.role_id
+    WHERE
+    a.admin_login_name=#{adminLoginName}
+    AND a.admin_login_pwd=#{adminLoginPwd}
+    AND a.role_id=#{role.roleId}
+    </select>
+
+    <!--管理员显示-->
+    <select id="adminManager" resultMap="adminMap">
+      SELECT
+        a.admin_id,a.admin_login_name,a.admin_login_pwd,
+        a.admin_status,a.dept_id,r.role_id,r.role_name,a.admin_real_name
+        FROM
+        admin a LEFT JOIN role r ON a.role_id=r.role_id
+        WHERE
+       a.role_id=#{role.roleId}
+    </select>
+
+    <!--添加管理员-->
+    <insert id="addAdmin" parameterType="admin">
+    INSERT into
+    admin (admin_login_name,admin_login_pwd,role_id,admin_status,admin_real_name)
+    VALUES(#{adminLoginName},#{adminLoginPwd},#{role.roleId},#{adminStatus},#{adminRealName})
+    </insert>
+
+    <!--根据ID查找管理员-->
+    <select id="findAdminById" parameterType="admin" resultMap="adminMap">
+           SELECT
+            a.admin_id,a.admin_login_name,a.admin_login_pwd,
+            a.admin_status,a.dept_id,a.role_id,a.admin_real_name
+            FROM
+            admin a
+            WHERE
+            a.admin_id=#{adminId}
+    </select>
+
+    <!--更新管理员状态-->
+    <update id="updateAdmin" parameterType="admin">
+        UPDATE admin SET admin_status=#{adminStatus} where admin_Id=#{adminId}
+    </update>
+</mapper>

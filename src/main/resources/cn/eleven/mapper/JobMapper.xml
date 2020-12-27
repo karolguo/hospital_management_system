@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.eleven.mapper.JobMapper">
+    <resultMap id="jobMap" type="job">
+        <id column="job_id" property="jobId"></id>
+        <result column="job_name" property="jobName"></result>
+        <result column="job_fee" property="jobFee"></result>
+    </resultMap>
+    <!--查询所有job-->
+    <select id="findAllJob" resultMap="jobMap">
+        select * from job
+    </select>
+    <!--通过id查找job-->
+    <select id="findJobById" parameterType="int" resultMap="jobMap">
+        select j.job_id,j.job_name from job j where j.job_id=#{jobId}
+    </select>
+
+    <!--通过医生id查询职称-->
+    <select id="findJobByDoctorId" resultMap="jobMap" parameterType="int">
+       select d.job_id,j.job_name,j.job_fee
+       from doctor d LEFT JOIN job j on d.job_id=j.job_id
+       WHERE d.doctor_id=#{doctorId}
+    </select>
+</mapper>

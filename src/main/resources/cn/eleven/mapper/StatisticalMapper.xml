@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.eleven.mapper.StatisticalMapper">
+    <resultMap id="docMap" type="doctor">
+        <id column="doctor_id" property="doctorId"></id>
+        <result column="doctor_name" property="doctorName"></result>
+        <result column="doctor_sex" property="doctorSex"></result>
+        <result column="doctor_pic" property="doctorPic"></result>
+        <result column="doctor_info" property="doctorInfo"></result>
+        <result column="doctor_status" property="doctorStatus"></result>
+        <result column="doctor_pwd" property="doctorPwd"></result>
+        <result column="dept_id" property="deptId"></result>
+        <result column="job_id" property="jobId"></result>
+        <association property="job" javaType="job">
+            <id column="job_id" property="jobId"></id>
+            <result column="job_name" property="jobName"></result>
+        </association>
+        <association property="dept" javaType="dept">
+            <id column="dept_id" property="deptId"></id>
+            <result column="dept_name" property="deptName"></result>
+            <result column="dept_parent_id" property="deptParentId"></result>
+            <result column="url" property="url"></result>
+            <result column="describe" property="describe"></result>
+        </association>
+        <association property="role" javaType="role">
+            <id column="role_id" property="roleId"/>
+            <result column="role_name" property="roleName"/>
+        </association>
+    </resultMap>
+
+    <!--regMap-->
+    <resultMap id="regMap" type="registered">
+        <id column="reg_id" property="regId"/>
+        <!--<result column="user_id" property="card"></result>-->
+        <result column="reg_date" property="regDate"/>
+        <result column="reg_price" property="regPrice"/>
+        <result column="reg_status" property="regStatus"/>
+        <!-- 卡的外键-->
+        <association property="card" javaType="card">
+            <id column="card_id" property="cardId"/>
+            <result column="user_id" property="userId"/>
+            <result column="user_pwd" property="userPwd"/>
+            <result column="user_name" property="userName"/>
+            <result column="user_sex" property="userSex"/>
+            <result column="money" property="money"/>
+            <result column="birthday" property="birthday"/>
+            <result column="card_status" property="cardStatus"/>
+            <result column="user_tel" property="userTel"/>
+            <result column="sos_tel" property="sosTel"/>
+            <result column="user_pic" property="userPic"/>
+        </association>
+
+        <!-- 科室的外键-->
+        <association  property="dept" javaType="dept">
+            <id column="dept_id" property="deptId"/>
+            <result column="dept_name" property="deptName"/>
+            <result column="dept_parent_id" property="deptParentId"/>
+            <result column="url" property="url"/>
+            <result column="describe" property="describe"/>
+        </association>
+
+        <!-- 医生的外键-->
+        <association  property="doctor" javaType="doctor">
+            <id column="doctor_id" property="doctorId"/>
+            <result column="doctor_name" property="doctorName"/>
+            <result column="doctor_sex" property="doctorSex"/>
+            <result column="doctor_pic" property="doctorPic"/>
+            <result column="doctor_info" property="doctorInfo"/>
+            <result column="doctor_status" property="doctorStatus"/>
+            <result column="doctor_pwd" property="doctorPwd"/>
+            <!--<result column="job_id" property="job"/>
+            <result column="dept_id" property="dept"/>
+            <result column="role_id" property="role"/>-->
+        </association>
+        <!-- 职称的外键-->
+        <association  property="job" javaType="job">
+            <id column="job_id" property=""/>
+            <result column="job_name" property=""/>
+        </association>
+    </resultMap>
+
+    <!--医生统计医生-->
+    <select id="adminStatisticalDoctor" resultMap="docMap" parameterType="doctor">
+    SELECT
+    COUNT(doctor_id) as doctor_id
+    FROM
+    doctor dc LEFT JOIN job jb ON dc.job_id=jb.job_id
+    LEFT JOIN dept dt ON dc.dept_id=dt.dept_id
+    WHERE
+    dc.dept_id LIKE CONCAT('%',#{deptId},'%') and dc.job_id=#{jobId}
+    </select>
+
+
+</mapper>

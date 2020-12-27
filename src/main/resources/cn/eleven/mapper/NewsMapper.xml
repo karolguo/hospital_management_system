@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.eleven.mapper.NewsMapper">
+
+    <resultMap id="newsMap" type="News">
+        <id column="news_id" property="newsId"></id>
+        <result column="news_title" property="newsTitle"></result>
+        <result column="news" property="news"></result>
+        <result column="author" property="author"></result>
+        <result column="news_date" property="newsDate"></result>
+    </resultMap>
+    <select id="findAllNewTitle" resultMap="newsMap">
+        SELECT
+	        news_id,news_title,news_date
+        FROM
+	        news
+
+    </select>
+    <select id="findNewsById" resultMap="newsMap">
+        SELECT
+	        news_id,news_title,news_date,news,author
+        FROM
+	        news
+        WHERE
+	        news_id = #{newsId}
+    </select>
+</mapper>

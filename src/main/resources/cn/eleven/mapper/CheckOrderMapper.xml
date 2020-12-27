@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.eleven.mapper.CheckOrderMapper">
+
+    <select id="findCheckOrderByMrId" resultType="Double">
+        SELECT c.check_price AS checkPrice
+        FROM check_order co LEFT JOIN `check` c ON c.check_id=co.check_id
+        WHERE co.mr_id=#{mrId}
+    </select>
+
+</mapper>
